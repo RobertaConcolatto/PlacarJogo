@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel da Juíza</title>
+<style>
+  :root {
+    --bg-light: #fafafa;
+    --bg-dark: #1a1a1a;
+    --card-light: #ffffff;
+    --card-dark: #2c2c2c;
+    --text-light: #111;
+    --text-dark: #f2f2f2;
+    --accent: #9b6cff;
+    --radius: 16px;
+    --shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+
+  body {
+    font-family: "Poppins", sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-light);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    transition: 0.3s;
+  }
+
+  body.dark {
+    background-color: var(--bg-dark);
+    color: var(--text-dark);
+  }
+
+  h1 {
+    margin-top: 24px;
+    font-weight: 700;
+  }
+
+  .controls {
+    margin: 20px 0;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  button {
+    background-color: var(--accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    padding: 10px 18px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  button:hover {
+    transform: scale(1.05);
+  }
+
+  .player-list {
+    display: grid;
+    gap: 15px;
+    margin-top: 20px;
+    width: 90%;
+    max-width: 700px;
+  }
+
+  .player-card {
+    background-color: var(--card-light);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: 0.3s;
+  }
+
+  body.dark .player-card {
+    background-color: var(--card-dark);
+  }
+
+  .player-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .player-info input {
+    font-size: 16px;
+    border: none;
+    background: none;
+    color: inherit;
+    width: 150px;
+  }
+
+  .score {
+    font-weight: bold;
+    font-size: 20px;
+  }
+
+  .score-controls {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .score-controls button {
+    background-color: transparent;
+    color: var(--accent);
+    font-weight: bold;
+    font-size: 18px;
+    padding: 4px 10px;
+  }
+
+  .score-controls button:hover {
+    background-color: var(--accent);
+    color: white;
+  }
+
+  .delete-btn {
+    background-color: transparent;
+    border: 2px solid crimson;
+    color: crimson;
+    font-size: 14px;
+    padding: 4px 10px;
+    border-radius: var(--radius);
+  }
+
+  .delete-btn:hover {
+    background-color: crimson;
+    color: white;
+  }
+
+  .theme-toggle {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    background-color: transparent;
+    border: 2px solid var(--accent);
+    color: var(--accent);
+    border-radius: var(--radius);
+  }
+
+  .theme-toggle:hover {
+    background-color: var(--accent);
+    color: white;
+  }
+</style>
+</head>
+<body>
+  <h1>🎯 Painel da Juíza</h1>
+
+  <div class="controls">
+    <button onclick="addPlayer()">+ Adicionar Jogador</button>
+    <button onclick="resetScores()">🔄 Zerar Pontos</button>
+    <button onclick="clearAllPlayers()">🧹 Limpar Jogadores</button>
+  </div>
+
+  <div class="player-list" id="playerList"></div>
+
+  <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+
+  <script>
+    let players = JSON.parse(localStorage.getItem("players")) || [];
+    let darkMode = localStorage.getItem("darkMode") === "true";
+
+    const playerList = document.getElementById("playerList");
+    if (darkMode) document.body.classList.add("dark");
+
+    function renderPlayers() {
+      playerList.innerHTML = "";
+      players.forEach((p, i) => {
+        const card = document.createElement("div");
+        card.className = "player-card";
+        card.innerHTML = `
+          <div class="player-info">
+            <input type="text" value="${p.name}" onchange="renamePlayer(${i}, this.value)">
+          </div>
+          <div class="score-controls">
+            <button onclick="changeScore(${i}, -1)">−</button>
+            <span class="score">${p.score}</span>
+            <button onclick="changeScore(${i}, 1)">+</button>
+            <button class="delete-btn" onclick="deletePlayer(${i})">🗑</button>
+          </div>
+        `;
+        playerList.appendChild(card);
+      });
+      saveData();
+    }
+
+    function addPlayer() {
+      const name = prompt("Nome do jogador ou dupla:");
+      if (name) {
+        players.push({ name, score: 0 });
+        renderPlayers();
+      }
+    }
+
+    function renamePlayer(i, newName) {
+      players[i].name = newName;
+      saveData();
+    }
+
+    function changeScore(i, delta) {
+      players[i].score = Math.max(0, players[i].score + delta);
+      renderPlayers();
+    }
+
+    function deletePlayer(i) {
+      if (confirm(`Excluir ${players[i].name}?`)) {
+        players.splice(i, 1);
+        renderPlayers();
+      }
+    }
+
+    function resetScores() {
+      if (players.length === 0) return alert("Nenhum jogador cadastrado!");
+      if (confirm("Zerar todos os pontos?")) {
+        players.forEach(p => p.score = 0);
+        renderPlayers();
+      }
+    }
+
+    function clearAllPlayers() {
+      if (confirm("Remover todos os jogadores e começar novo jogo?")) {
+        players = [];
+        renderPlayers();
+      }
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle("dark");
+      darkMode = document.body.classList.contains("dark");
+      localStorage.setItem("darkMode", darkMode);
+    }
+
+    function saveData() {
+      localStorage.setItem("players", JSON.stringify(players));
+    }
+
+    renderPlayers();
+  </script>
+</body>
+</html>
