@@ -1,4 +1,4 @@
-# 🎯 Painel da Juíza
+# Painel da Juíza
 
 Aplicação web desenvolvida com HTML, CSS e JavaScript para controle de pontuação de jogadores ou duplas.
 
@@ -23,6 +23,6 @@ Interface adaptada para diferentes tamanhos de tela.
 ## Objetivo do projeto
 Projeto desenvolvido para praticar manipulação do DOM, armazenamento local com LocalStorage, responsividade e organização de interface.
 
-## 🔗 Deploy
+## LINK
 Acesse o projeto publicado no GitHub Pages:
-https://seulink.github.io/
+https://robertaconcolatto.github.io/PlacarJogo/ 
